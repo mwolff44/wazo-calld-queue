@@ -185,6 +185,7 @@ class QueuesBusEventHandler(object):
                             'queue': agent_first_queue,
                             'is_logged': agent_islogged,
                             'is_paused': agent_ispaused,
+                            'is_offline': False,
                             'is_talking': False,
                             'is_ringing': False,
                             'logged_at': "",
@@ -217,6 +218,7 @@ class QueuesBusEventHandler(object):
                     'queue': agent_first_queue,
                     'is_logged': False,
                     'is_paused': False,
+                    'is_offline': False,
                     'is_talking': False,
                     'is_ringing': False,
                     'logged_at': "",
@@ -278,6 +280,9 @@ class QueuesBusEventHandler(object):
 
         # QueueMemberStatus
         if event['Event'] == "QueueMemberStatus" and event['Membership'] == "dynamic":
+            if event['Status'] == "5":
+                # WDA is disconnected - websocket KO
+                agents[tenant_uuid][agent]['is_offline'] = True
             if event['Status'] == "6":
                 # Ringing
                 agents[tenant_uuid][agent]['is_ringing'] = True
@@ -291,6 +296,7 @@ class QueuesBusEventHandler(object):
                 # Hangup
                 agents[tenant_uuid][agent]['is_talking'] = False
                 agents[tenant_uuid][agent]['is_ringing'] = False
+                agents[tenant_uuid][agent]['is_offline'] = False
                 agents[tenant_uuid][agent]['talked_at'] = ""
                 agents[tenant_uuid][agent]['talked_with_number'] = ""
                 agents[tenant_uuid][agent]['talked_with_name'] = ""
