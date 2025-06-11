@@ -3,7 +3,7 @@ Add queue control to wazo-calld and publish to Wazo websocket Queue log from waz
 Installation
 ------------
 
-    wazo-plugind-cli -c "install git https://github.com/sboily/wazo-calld-queue"
+    wazo-plugind-cli -c "install git https://github.com/mwolff44/wazo-calld-queue"
 
 Use
 ---

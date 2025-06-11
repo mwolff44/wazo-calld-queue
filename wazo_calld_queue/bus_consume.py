@@ -21,7 +21,6 @@ from .events import (
 stats = {}
 agents = {}
 
-#MY_TENANT = '6209d5e0-4015-4853-ab2b-2e556bef5e46'
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,6 @@ class QueuesBusEventHandler(object):
         self.bus_publisher = bus_publisher
         self.confd = confd
         self.agentd = agentd
-        self.MY_TENANT = MY_TENANT
 
     def subscribe(self, bus_consumer):
         bus_consumer.subscribe('QueueCallerAbandon', self._queue_caller_abandon)
