@@ -29,7 +29,7 @@ MEMBER_NUM_FROM_AGENT = re.compile(r'^Agent/(\d+)$')
 
 class QueuesBusEventHandler(object):
 
-    def __init__(self, bus_publisher, confd, agentd, MY_TENANT):
+    def __init__(self, bus_publisher, confd, agentd):
         self.bus_publisher = bus_publisher
         self.confd = confd
         self.agentd = agentd
@@ -165,7 +165,7 @@ class QueuesBusEventHandler(object):
                 else:
                     agent_islogged = False
                 if status[0].get('paused') is not None:
-                    agent_ispaused = status[0].get('paused') 
+                    agent_ispaused = status[0].get('paused')
                 else:
                     agent_ispaused = False
 
@@ -250,7 +250,7 @@ class QueuesBusEventHandler(object):
     def _agents_status(self, event, tenant_uuid):
 
         agent = 0
-    
+
         # Check if agents for this tenant exists
         if event['Event'] != "QueueCallerLeave" and event['Membership'] == "dynamic":
             interface = AGENT_ID_FROM_IFACE.match(event['Interface'])
@@ -335,7 +335,7 @@ class QueuesBusEventHandler(object):
         name = event['Queue']
 
         self.get_stats(name)
-        
+
         queue_event = event['Event']
         if queue_event == "QueueCallerJoin":
             stats[name]['count'] = int(event['Count'])
@@ -381,5 +381,5 @@ class QueuesBusEventHandler(object):
         try:
             tenant_uuid = event['ChanVariable']['WAZO_TENANT_UUID']
         except:
-            tenant_uuid = self.MY_TENANT
+            print("Tenant UUID not found")
         return tenant_uuid
