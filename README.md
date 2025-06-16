@@ -5,6 +5,15 @@ Installation
 
     wazo-plugind-cli -c "install git https://github.com/mwolff44/wazo-calld-queue"
 
+Configuration
+-------------
+
+Add tenant_uuid in /etc/wazo-calld/conf.d/01-queue.yml
+
+```
+calld_queue_tenant_uuid: "6209d5e0-4015-4853-ab2b-2e556bef5e46"
+```
+
 Use
 ---
 
