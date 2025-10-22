@@ -382,6 +382,8 @@ class QueuesBusEventHandler(object):
             tenant_uuid = event["ChanVariable"]["WAZO_TENANT_UUID"]
         except (KeyError, TypeError):
             interface = AGENT_ID_FROM_IFACE.match(event["Interface"])
+            if not interface:
+                raise ValueError(f"Interface '{event['Interface']}' does not match expected pattern")
             agent_id = int(interface.group(1))
             agent = self.confd.agents.get(agent_id)
             tenant_uuid = agent["tenant_uuid"]
