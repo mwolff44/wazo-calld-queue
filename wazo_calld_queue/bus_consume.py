@@ -181,9 +181,8 @@ class QueuesBusEventHandler(object):
             if str(agentInfo["lastname"]) != "None":
                 agent_fullname += " " + str(agentInfo["lastname"])
             try:
-                agentList = self.confd.agents.list(tenant_uuid=tenant_uuid)
-                agent_first_queue = agentList["queues"][0].get("name")
-            except (KeyError, TypeError):
+                agent_first_queue = agentInfo["queues"][0].get("name")
+            except (KeyError, TypeError, IndexError):
                 agent_first_queue = False
             agents[tenant_uuid].update(
                 {
