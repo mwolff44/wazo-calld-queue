@@ -198,7 +198,7 @@ class QueuesBusEventHandler(object):
 
                 try:
                     agent_first_queue = agent["queues"][0].get("name")
-                except (KeyError, TypeError):
+                except:
                     agent_first_queue = False
 
                 if not agents[tenant_uuid].get(agent["id"]):
