@@ -103,7 +103,6 @@ class QueuesBusEventHandler(object):
 
     def _queue_member_penalty(self, event):
         if "usersharedlines" in event.get("Interface", "").lower():
-            print(event)
             logger.debug(
                 f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
             )
