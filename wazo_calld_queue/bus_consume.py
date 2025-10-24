@@ -32,11 +32,10 @@ MEMBER_NUM_FROM_AGENT = re.compile(r"^Agent/(\d+)$")
 
 
 class QueuesBusEventHandler(object):
-    def __init__(self, bus_publisher, confd, agentd, MY_TENANT):
+    def __init__(self, bus_publisher, confd, agentd):
         self.bus_publisher = bus_publisher
         self.confd = confd
         self.agentd = agentd
-        self.MY_TENANT = MY_TENANT
 
     def subscribe(self, bus_consumer):
         bus_consumer.subscribe("QueueCallerAbandon", self._queue_caller_abandon)
@@ -73,37 +72,87 @@ class QueuesBusEventHandler(object):
         self.bus_publisher.publish(bus_event)
 
     def _queue_member_added(self, event):
-        tenant_uuid = self._extract_tenant_uuid(event)
-        self._agents_status(event, tenant_uuid)
-        bus_event = QueueMemberAddedEvent(event, tenant_uuid)
+        if "usersharedlines" in event.get("Interface", "").lower():
+            logger.debug(
+                f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
+            )
+            bus_event = QueueMemberAddedEvent(
+                event, "00000000-0000-0000-0000-000000000000"
+            )
+        else:
+            tenant_uuid = self._extract_tenant_uuid(event)
+            self._agents_status(event, tenant_uuid)
+            bus_event = QueueMemberAddedEvent(event, tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
     def _queue_member_pause(self, event):
-        tenant_uuid = self._extract_tenant_uuid(event)
-        self._agents_status(event, tenant_uuid)
-        bus_event = QueueMemberPauseEvent(event, tenant_uuid)
+        if "usersharedlines" in event.get("Interface", "").lower():
+            logger.debug(
+                f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
+            )
+            bus_event = QueueMemberPauseEvent(
+                event, "00000000-0000-0000-0000-000000000000"
+            )
+        else:
+            tenant_uuid = self._extract_tenant_uuid(event)
+            self._agents_status(event, tenant_uuid)
+            bus_event = QueueMemberPauseEvent(event, tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
     def _queue_member_penalty(self, event):
-        tenant_uuid = self._extract_tenant_uuid(event)
-        bus_event = QueueMemberPenaltyEvent(event, tenant_uuid)
+        if "usersharedlines" in event.get("Interface", "").lower():
+            logger.debug(
+                f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
+            )
+            bus_event = QueueMemberPenaltyEvent(
+                event, "00000000-0000-0000-0000-000000000000"
+            )
+        else:
+            tenant_uuid = self._extract_tenant_uuid(event)
+            self._agents_status(event, tenant_uuid)
+            bus_event = QueueMemberPenaltyEvent(event, tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
     def _queue_member_removed(self, event):
-        tenant_uuid = self._extract_tenant_uuid(event)
-        self._agents_status(event, tenant_uuid)
-        bus_event = QueueMemberRemovedEvent(event, tenant_uuid)
+        if "usersharedlines" in event.get("Interface", "").lower():
+            logger.debug(
+                f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
+            )
+            bus_event = QueueMemberRemovedEvent(
+                event, "00000000-0000-0000-0000-000000000000"
+            )
+        else:
+            tenant_uuid = self._extract_tenant_uuid(event)
+            self._agents_status(event, tenant_uuid)
+            bus_event = QueueMemberRemovedEvent(event, tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
     def _queue_member_ringinuse(self, event):
-        tenant_uuid = self._extract_tenant_uuid(event)
-        bus_event = QueueMemberRingInUseEvent(event, tenant_uuid)
+        if "usersharedlines" in event.get("Interface", "").lower():
+            logger.debug(
+                f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
+            )
+            bus_event = QueueMemberRingInUseEvent(
+                event, "00000000-0000-0000-0000-000000000000"
+            )
+        else:
+            tenant_uuid = self._extract_tenant_uuid(event)
+            self._agents_status(event, tenant_uuid)
+            bus_event = QueueMemberRingInUseEvent(event, tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
     def _queue_member_status(self, event):
-        tenant_uuid = self._extract_tenant_uuid(event)
-        self._agents_status(event, tenant_uuid)
-        bus_event = QueueMemberStatusEvent(event, tenant_uuid)
+        if "usersharedlines" in event.get("Interface", "").lower():
+            logger.debug(
+                f"Ignoring event with usersharedlines interface: {event.get('Interface')}"
+            )
+            bus_event = QueueMemberStatusEvent(
+                event, "00000000-0000-0000-0000-000000000000"
+            )
+        else:
+            tenant_uuid = self._extract_tenant_uuid(event)
+            self._agents_status(event, tenant_uuid)
+            bus_event = QueueMemberStatusEvent(event, tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
     def _queue_livestats(self, event, tenant_uuid):
@@ -114,7 +163,7 @@ class QueuesBusEventHandler(object):
         bus_event = QueueAgentsStatusEvent(event[tenant_uuid][agent], tenant_uuid)
         self.bus_publisher.publish(bus_event)
 
-    def get_agents_status(self, tenant_uuid):
+    def get_agents_status(self, tenant_uuid: str) -> dict:
         if not agents.get(tenant_uuid):
             agents.update({tenant_uuid: {}})
             agentList = self.confd.agents.list(tenant_uuid=tenant_uuid)
@@ -132,18 +181,18 @@ class QueuesBusEventHandler(object):
                     for x in agentStatus
                     if x.__dict__.get("id") == agent["id"]
                 ]
-                if status[0].get("logged") is not None:
+                if status and status[0].get("logged") is not None:
                     agent_islogged = status[0].get("logged")
                 else:
                     agent_islogged = False
-                if status[0].get("paused") is not None:
+                if status and status[0].get("paused") is not None:
                     agent_ispaused = status[0].get("paused")
                 else:
                     agent_ispaused = False
 
                 try:
                     agent_first_queue = agent["queues"][0].get("name")
-                except (KeyError, TypeError):
+                except (IndexError, KeyError, TypeError):
                     agent_first_queue = False
 
                 if not agents[tenant_uuid].get(agent["id"]):
@@ -382,7 +431,9 @@ class QueuesBusEventHandler(object):
         except (KeyError, TypeError):
             interface = AGENT_ID_FROM_IFACE.match(event["Interface"])
             if not interface:
-                raise ValueError(f"Interface '{event['Interface']}' does not match expected pattern")
+                raise ValueError(
+                    f"Interface '{event['Interface']}' does not match expected pattern"
+                )
             agent_id = int(interface.group(1))
             agent = self.confd.agents.get(agent_id)
             tenant_uuid = agent["tenant_uuid"]
